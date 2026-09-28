@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="FoodSaver AI — intelligent food waste reduction and sustainability platform">
+  <title>FoodSaver AI — Save Food. Save Money. Save the Planet.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-mark">FS</div><div><strong>FoodSaver</strong><span>AI</span></div></div>
+    <nav>
+      <button class="nav-item active" data-page="dashboard">⌂ <span>Dashboard</span></button>
+      <button class="nav-item" data-page="inventory">▣ <span>Inventory</span></button>
+      <button class="nav-item" data-page="assistant">✦ <span>AI Assistant</span></button>
+      <button class="nav-item" data-page="analytics">◒ <span>Analytics</span></button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="impact-mini"><span>🌱</span><div><small>Monthly impact</small><b id="sideImpact">32% less waste</b></div></div>
+      <button class="nav-item" data-page="settings">⚙ <span>Settings</span></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="mobile-menu" id="menuBtn">☰</button>
+      <div class="search"><span>⌕</span><input id="globalSearch" placeholder="Search food, insights..." /></div>
+      <div class="top-actions"><button class="icon-btn" id="notifBtn">♢<i></i></button><div class="avatar">T</div></div>
+    </header>
+
+    <section class="content" id="page-dashboard">
+      <div class="page-heading"><div><p class="eyebrow">MONDAY, SEPTEMBER 28, 2026</p><h1>Good evening, Theo 👋</h1><p class="muted">Here’s how you’re turning everyday choices into a lighter footprint.</p></div><button class="primary" id="addFoodTop">＋ Add food</button></div>
+      <div class="hero-card">
+        <div><span class="pill">AI SUSTAINABILITY SCORE</span><div class="hero-score"><strong id="score">87</strong><span>/100</span></div><p>Excellent progress. You're consistently rescuing food before it becomes waste.</p><button class="ghost light" data-page="analytics">View impact report →</button></div>
+        <div class="hero-orbit"><div class="orbit-ring"></div><div class="leaf">🌿</div><div class="orbit-text"><b id="savedHero">18.4</b><small>kg saved</small></div></div>
+      </div>
+      <div class="metric-grid">
+        <article class="metric"><div class="metric-icon green">♻</div><span>Food saved</span><b id="foodSaved">18.4 kg</b><small>↑ 12.8% this month</small></article>
+        <article class="metric"><div class="metric-icon gold">₹</div><span>Money saved</span><b id="moneySaved">₹1,850</b><small>↑ ₹420 this month</small></article>
+        <article class="metric"><div class="metric-icon blue">CO₂</div><span>CO₂ avoided</span><b id="co2Saved">31.2 kg</b><small>Equivalent to 128 km driven</small></article>
+        <article class="metric"><div class="metric-icon purple">⚡</div><span>Waste reduction</span><b id="wasteReduction">32%</b><small>vs. your baseline</small></article>
+      </div>
+      <div class="section-grid">
+        <article class="panel"><div class="panel-head"><div><h2>Expiry watch</h2><p>Food that needs attention first</p></div><button class="text-btn" data-page="inventory">View all →</button></div><div id="expiryList" class="expiry-list"></div></article>
+        <article class="panel"><div class="panel-head"><div><h2>Weekly waste</h2><p>Your progress over the last 7 days</p></div><span class="trend">↓ 18%</span></div><div class="chart-wrap"><canvas id="wasteChart"></canvas></div><div class="chart-labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div></article>
+      </div>
+      <article class="panel recipe-panel"><div class="panel-head"><div><h2>AI rescue suggestions</h2><p>Use these ingredients before they expire.</p></div><button class="primary small" data-page="assistant">Open AI assistant</button></div><div id="recipeCards" class="recipe-grid"></div></article>
+    </section>
+
+    <section class="content hidden" id="page-inventory">
+      <div class="page-heading"><div><p class="eyebrow">FOOD INVENTORY</p><h1>Know what you have.</h1><p class="muted">Keep every ingredient visible and rescue food before it expires.</p></div><button class="primary" id="addFoodBtn">＋ Add food</button></div>
+      <div class="inventory-toolbar"><div class="filter-tabs"><button class="filter active" data-filter="all">All</button><button class="filter" data-filter="urgent">Urgent</button><button class="filter" data-filter="fresh">Fresh</button></div><div class="search mini"><span>⌕</span><input id="inventorySearch" placeholder="Search inventory..." /></div></div>
+      <div id="inventoryGrid" class="inventory-grid"></div>
+    </section>
+
+    <section class="content hidden" id="page-assistant">
+      <div class="page-heading"><div><p class="eyebrow">FOODSAVER INTELLIGENCE</p><h1>Your AI food-saving assistant.</h1><p class="muted">Ask for recipes, storage tips, or ways to rescue ingredients.</p></div></div>
+      <div class="assistant-layout"><div class="chat-panel"><div class="chat-head"><div class="ai-avatar">✦</div><div><b>FoodSaver AI</b><span>Online · sustainability focused</span></div></div><div class="chat-messages" id="chatMessages"><div class="bubble ai">Hi Theo! I found <b>3 ingredients</b> that deserve attention. Tell me what you want to cook, or ask me how to reduce your food waste. 🌱</div></div><div class="quick-prompts"><button>What should I use first?</button><button>Give me a recipe</button><button>How do I store vegetables?</button></div><form class="chat-input" id="chatForm"><input id="chatInput" placeholder="Ask FoodSaver AI..." autocomplete="off"><button>↑</button></form></div><aside class="insight-panel"><span class="pill dark">TODAY'S INSIGHT</span><h3>Rescue before Friday.</h3><p>Your tomatoes and milk are approaching their best-use window.</p><div class="mini-food"><span>🍅</span><div><b>Tomatoes</b><small>2 days left</small></div></div><div class="mini-food"><span>🥛</span><div><b>Milk</b><small>1 day left</small></div></div><button class="primary full" id="rescueBtn">Create rescue plan</button></aside></div>
+    </section>
+
+    <section class="content hidden" id="page-analytics">
+      <div class="page-heading"><div><p class="eyebrow">IMPACT ANALYTICS</p><h1>Measure your positive impact.</h1><p class="muted">Small actions, measurable sustainability outcomes.</p></div><button class="ghost" id="exportBtn">Export report</button></div>
+      <div class="impact-banner"><div><span class="pill">THIS MONTH</span><h2>You're on track to rescue <em>24 kg</em> of food.</h2><p>That's enough food for approximately 48 meals.</p></div><div class="big-leaf">🌎</div></div>
+      <div class="metric-grid"><article class="metric"><span>Rescued meals</span><b>48</b><small>+14 this month</small></article><article class="metric"><span>Landfill avoided</span><b>18.4 kg</b><small>Food diverted from waste</small></article><article class="metric"><span>Water preserved</span><b>4,920 L</b><small>Estimated virtual water</small></article><article class="metric"><span>Eco points</span><b>1,240</b><small>Level 7 · Food Saver</small></article></div>
+      <div class="section-grid"><article class="panel"><div class="panel-head"><div><h2>Food saved vs. waste</h2><p>Monthly trend</p></div></div><div class="big-bars"><div><span>Jun</span><i style="height:44%"></i><i class="saved" style="height:70%"></i></div><div><span>Jul</span><i style="height:38%"></i><i class="saved" style="height:78%"></i></div><div><span>Aug</span><i style="height:31%"></i><i class="saved" style="height:84%"></i></div><div><span>Sep</span><i style="height:22%"></i><i class="saved" style="height:92%"></i></div></div><div class="legend"><span><i></i> Waste</span><span><i class="saved"></i> Saved</span></div></article><article class="panel"><div class="panel-head"><div><h2>Top impact actions</h2><p>Where your points came from</p></div></div><div class="action-row"><span>🥕 Rescued ingredients</span><b>+540</b></div><div class="action-row"><span>♻️ Avoided waste</span><b>+380</b></div><div class="action-row"><span>🍲 Cooked leftovers</span><b>+220</b></div><div class="action-row"><span>🛒 Smarter shopping</span><b>+100</b></div></article></div>
+    </section>
+
+    <section class="content hidden" id="page-settings">
+      <div class="page-heading"><div><p class="eyebrow">SETTINGS</p><h1>Your FoodSaver profile.</h1><p class="muted">Configure your experience.</p></div></div>
+      <div class="panel settings"><label>Display name<input value="Theo"></label><label>Email<input value="theo@example.com"></label><label>Expiry notifications<select><option>24 hours before</option><option>48 hours before</option><option>72 hours before</option></select></label><button class="primary">Save settings</button></div>
+    </section>
+
+    <footer><span>FoodSaver AI</span><span>Designed &amp; Developed by Theo</span><span>Built for a smarter, more sustainable future.</span></footer>
+  </main>
+</div>
+
+<div class="modal hidden" id="foodModal"><div class="modal-card"><button class="modal-close" id="closeModal">×</button><span class="pill">NEW INVENTORY ITEM</span><h2>Add food to your kitchen</h2><p class="muted">FoodSaver will prioritize it based on its expiry date.</p><form id="foodForm"><label>Food name<input name="name" required placeholder="e.g. Bananas"></label><div class="two"><label>Category<select name="category"><option>Fruit</option><option>Vegetable</option><option>Dairy</option><option>Grain</option><option>Protein</option><option>Other</option></select></label><label>Quantity<input name="quantity" required placeholder="e.g. 1 kg"></label></div><label>Expiry date<input type="date" name="expiry" required></label><button class="primary full">Add to inventory</button></form></div></div>
+<div class="toast hidden" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>

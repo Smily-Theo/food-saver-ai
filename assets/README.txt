@@ -1,0 +1,1 @@
+Place optional food images in this folder.
