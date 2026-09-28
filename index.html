@@ -11,7 +11,35 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="app-shell">
+
+<div class="auth-screen" id="authScreen">
+  <div class="auth-decoration"><div class="auth-glow"></div><div class="auth-leaf">🌿</div></div>
+  <div class="auth-card">
+    <div class="auth-brand"><div class="brand-mark">FS</div><div><strong>FoodSaver</strong><span>AI</span></div></div>
+    <div class="auth-copy">
+      <span class="pill">SMART SUSTAINABILITY</span>
+      <h1>Save food.<br><em>Save the planet.</em></h1>
+      <p>Track what you have, rescue food before it expires, and turn everyday choices into measurable impact.</p>
+    </div>
+    <div class="auth-tabs"><button class="auth-tab active" data-auth="login">Sign in</button><button class="auth-tab" data-auth="register">Create account</button></div>
+    <form id="loginForm" class="auth-form">
+      <label>Email<input type="email" id="loginEmail" required placeholder="you@example.com" autocomplete="email"></label>
+      <label>Password<input type="password" id="loginPassword" required placeholder="••••••••" autocomplete="current-password"></label>
+      <button class="primary full" type="submit">Sign in to FoodSaver <span>→</span></button>
+      <p class="auth-note" id="authMessage"></p>
+    </form>
+    <form id="registerForm" class="auth-form hidden">
+      <label>Your name<input type="text" id="registerName" required placeholder="Theo" autocomplete="name"></label>
+      <label>Email<input type="email" id="registerEmail" required placeholder="you@example.com" autocomplete="email"></label>
+      <label>Password<input type="password" id="registerPassword" minlength="6" required placeholder="At least 6 characters" autocomplete="new-password"></label>
+      <button class="primary full" type="submit">Create my account <span>→</span></button>
+      <p class="auth-note" id="registerMessage"></p>
+    </form>
+    <div class="auth-demo" id="authSetupNote">Demo mode is available until your Supabase publishable key is configured.</div>
+  </div>
+</div>
+
+<div class="app-shell" id="appShell">
   <aside class="sidebar" id="sidebar">
     <div class="brand"><div class="brand-mark">FS</div><div><strong>FoodSaver</strong><span>AI</span></div></div>
     <nav>
@@ -30,7 +58,7 @@
     <header class="topbar">
       <button class="mobile-menu" id="menuBtn">☰</button>
       <div class="search"><span>⌕</span><input id="globalSearch" placeholder="Search food, insights..." /></div>
-      <div class="top-actions"><button class="icon-btn" id="notifBtn">♢<i></i></button><div class="avatar">T</div></div>
+      <div class="top-actions"><button class="icon-btn" id="notifBtn">♢<i></i></button><div class="user-menu"><span class="user-name" id="userName">Theo</span><div class="avatar">T</div><button class="logout-btn" id="logoutBtn">Log out</button></div></div>
     </header>
 
     <section class="content" id="page-dashboard">
@@ -82,6 +110,7 @@
 <div class="modal hidden" id="foodModal"><div class="modal-card"><button class="modal-close" id="closeModal">×</button><span class="pill">NEW INVENTORY ITEM</span><h2>Add food to your kitchen</h2><p class="muted">FoodSaver will prioritize it based on its expiry date.</p><form id="foodForm"><label>Food name<input name="name" required placeholder="e.g. Bananas"></label><div class="two"><label>Category<select name="category"><option>Fruit</option><option>Vegetable</option><option>Dairy</option><option>Grain</option><option>Protein</option><option>Other</option></select></label><label>Quantity<input name="quantity" required placeholder="e.g. 1 kg"></label></div><label>Expiry date<input type="date" name="expiry" required></label><button class="primary full">Add to inventory</button></form></div></div>
 <div class="toast hidden" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

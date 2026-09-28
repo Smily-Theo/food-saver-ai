@@ -1,18 +1,111 @@
-
-/* FoodSaver AI — Supabase connection
-   Project URL configured for this project:
-   https://bpsgevzareqwzflwdawj.supabase.co
-
-   For production, set these before loading the app:
-   window.FOODSAVER_SUPABASE_URL
-   window.FOODSAVER_SUPABASE_KEY
-
-   Never put a Supabase service_role/secret key in this file.
-*/
-const SUPABASE_URL = window.FOODSAVER_SUPABASE_URL || "https://bpsgevzareqwzflwdawj.supabase.co";
-const SUPABASE_KEY = window.FOODSAVER_SUPABASE_KEY || "";
-const hasSupabase = !!(window.supabase && SUPABASE_URL && SUPABASE_KEY);
+/* FoodSaver AI — Supabase + Authentication */
+const SUPABASE_URL = (window.FOODSAVER_CONFIG && window.FOODSAVER_CONFIG.SUPABASE_URL) || "https://bpsgevzareqwzflwdawj.supabase.co";
+const SUPABASE_KEY = (window.FOODSAVER_CONFIG && window.FOODSAVER_CONFIG.SUPABASE_KEY) || "";
+const hasSupabase = !!(window.supabase && SUPABASE_URL && SUPABASE_KEY && !SUPABASE_KEY.includes("YOUR_"));
 const sb = hasSupabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+async function loadCloudInventory() {
+  if (!sb) return false;
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return false;
+  const { data, error } = await sb.from("food_items")
+    .select("id,name,category,quantity,expiry_date,status")
+    .eq("user_id", user.id)
+    .order("expiry_date", { ascending: true });
+  if (error) { console.warn("Supabase inventory read:", error.message); return false; }
+  inventory = (data || []).map(x => ({
+    id:x.id, name:x.name, category:x.category, quantity:x.quantity,
+    expiry:x.expiry_date, emoji:{Fruit:"🍎",Vegetable:"🥕",Dairy:"🥛",Grain:"🍚",Protein:"🥚",Other:"🥫"}[x.category] || "🥫"
+  }));
+  renderExpiry(); renderInventory();
+  return true;
+}
+
+async function saveCloudFood(item) {
+  if (!sb) return true;
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) {
+    toast("Please sign in to save food to your account.");
+    return false;
+  }
+  const { data, error } = await sb.from("food_items").insert({
+    user_id:user.id, name:item.name, category:item.category,
+    quantity:item.quantity, expiry_date:item.expiry, status:"active"
+  }).select().single();
+  if (error) { toast("Database error: " + error.message); return false; }
+  item.id = data.id;
+  return true;
+}
+
+async function ensureProfile(user) {
+  if (!sb || !user) return;
+  await sb.from("profiles").upsert({
+    id:user.id,
+    display_name:user.user_metadata?.display_name || user.email?.split("@")[0] || "Theo"
+  });
+}
+
+async function showAuthenticatedApp(user) {
+  $("#authScreen").classList.add("hidden");
+  $("#appShell").classList.remove("hidden");
+  const name = user?.user_metadata?.display_name || user?.email?.split("@")[0] || "Theo";
+  const heading = document.querySelector("#page-dashboard h1");
+  if (heading) heading.textContent = `Good evening, ${name} 👋`;
+  const avatar = document.querySelector(".avatar");
+  if (avatar) avatar.textContent = name.charAt(0).toUpperCase(); const userNameEl=$("#userName"); if(userNameEl) userNameEl.textContent=name;
+  await ensureProfile(user);
+  await loadCloudInventory();
+}
+
+function showAuthScreen() {
+  $("#authScreen").classList.remove("hidden");
+  $("#appShell").classList.add("hidden");
+}
+
+function setAuthMessage(id, text, success=false) {
+  const el=$(id); if(!el)return; el.textContent=text; el.classList.toggle("success",success);
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  if (!hasSupabase) { setAuthMessage("#authMessage","Add your Supabase publishable key in config.js first."); return; }
+  const email=$("#loginEmail").value.trim(), password=$("#loginPassword").value;
+  setAuthMessage("#authMessage","Signing you in…",true);
+  const {data,error}=await sb.auth.signInWithPassword({email,password});
+  if(error){setAuthMessage("#authMessage",error.message);return;}
+  await showAuthenticatedApp(data.user);
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  if (!hasSupabase) { setAuthMessage("#registerMessage","Add your Supabase publishable key in config.js first."); return; }
+  const name=$("#registerName").value.trim(), email=$("#registerEmail").value.trim(), password=$("#registerPassword").value;
+  setAuthMessage("#registerMessage","Creating your account…",true);
+  const {data,error}=await sb.auth.signUp({email,password,options:{data:{display_name:name}}});
+  if(error){setAuthMessage("#registerMessage",error.message);return;}
+  if(data.session){ await showAuthenticatedApp(data.user); }
+  else { setAuthMessage("#registerMessage","Account created. Check your email to confirm your account.",true); }
+}
+
+async function connectSupabase() {
+  if (!hasSupabase) {
+    showAuthScreen();
+    $("#authSetupNote").textContent="Setup required: open config.js and replace YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY with your Supabase browser-safe key.";
+    return;
+  }
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if(session?.user) await showAuthenticatedApp(session.user);
+    else showAuthScreen();
+  });
+  const {data:{session}}=await sb.auth.getSession();
+  if(session?.user) await showAuthenticatedApp(session.user); else showAuthScreen();
+}
+
+async function logout() {
+  if(sb) await sb.auth.signOut();
+  showAuthScreen();
+  toast("You have been signed out.");
+}
 
 async function loadCloudInventory() {
   if (!sb) return false;
@@ -101,3 +194,13 @@ function drawChart(){const c=$("#wasteChart"),ctx=c.getContext("2d"),d=devicePix
 renderExpiry();renderInventory();renderRecipes();drawChart();window.addEventListener("resize",drawChart);
 
 connectSupabase();
+
+$$(".auth-tab").forEach(btn=>btn.addEventListener("click",()=>{
+  $$(".auth-tab").forEach(x=>x.classList.remove("active")); btn.classList.add("active");
+  const isLogin=btn.dataset.auth==="login";
+  $("#loginForm").classList.toggle("hidden",!isLogin);
+  $("#registerForm").classList.toggle("hidden",isLogin);
+}));
+$("#loginForm").addEventListener("submit",handleLogin);
+$("#registerForm").addEventListener("submit",handleRegister);
+$("#logoutBtn").addEventListener("click",logout);

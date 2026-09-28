@@ -57,3 +57,12 @@ window.FOODSAVER_SUPABASE_KEY = "YOUR_PUBLISHABLE_OR_ANON_KEY";
 </script>
 ```
 For production, prefer a build-based frontend with Vite environment variables so secrets are managed by the deployment platform.
+
+
+## Authentication setup
+1. Open `config.js`.
+2. Replace `YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY` with the browser-safe Publishable/anon key from Supabase.
+3. Do NOT use a `service_role` or secret key.
+4. Commit `config.js` to GitHub. A publishable/anon key is designed for browser use; database access is protected by the RLS policies in `supabase/schema.sql`.
+5. Supabase Authentication → Providers → Email must be enabled.
+6. If email confirmation is enabled, users must confirm their email before they can sign in.
