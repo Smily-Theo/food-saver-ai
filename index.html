@@ -50,6 +50,7 @@
     </nav>
     <div class="sidebar-bottom">
       <div class="impact-mini"><span>🌱</span><div><small>Monthly impact</small><b id="sideImpact">32% less waste</b></div></div>
+      <button class="nav-item" data-page="profile">◉ <span>Profile</span></button>
       <button class="nav-item" data-page="settings">⚙ <span>Settings</span></button>
     </div>
   </aside>
@@ -58,7 +59,7 @@
     <header class="topbar">
       <button class="mobile-menu" id="menuBtn">☰</button>
       <div class="search"><span>⌕</span><input id="globalSearch" placeholder="Search food, insights..." /></div>
-      <div class="top-actions"><button class="icon-btn" id="notifBtn">♢<i></i></button><div class="user-menu"><span class="user-name" id="userName">Theo</span><div class="avatar">T</div><button class="logout-btn" id="logoutBtn">Log out</button></div></div>
+      <div class="top-actions"><button class="icon-btn" id="notifBtn">♢<i></i></button><div class="user-menu"><span class="user-name" id="userName">Theo</span><button class="avatar avatar-button" id="profileAvatarBtn" title="View profile">T</button><button class="logout-btn" id="logoutBtn">Log out</button></div></div>
     </header>
 
     <section class="content" id="page-dashboard">
@@ -96,6 +97,31 @@
       <div class="impact-banner"><div><span class="pill">THIS MONTH</span><h2>You're on track to rescue <em>24 kg</em> of food.</h2><p>That's enough food for approximately 48 meals.</p></div><div class="big-leaf">🌎</div></div>
       <div class="metric-grid"><article class="metric"><span>Rescued meals</span><b>48</b><small>+14 this month</small></article><article class="metric"><span>Landfill avoided</span><b>18.4 kg</b><small>Food diverted from waste</small></article><article class="metric"><span>Water preserved</span><b>4,920 L</b><small>Estimated virtual water</small></article><article class="metric"><span>Eco points</span><b>1,240</b><small>Level 7 · Food Saver</small></article></div>
       <div class="section-grid"><article class="panel"><div class="panel-head"><div><h2>Food saved vs. waste</h2><p>Monthly trend</p></div></div><div class="big-bars"><div><span>Jun</span><i style="height:44%"></i><i class="saved" style="height:70%"></i></div><div><span>Jul</span><i style="height:38%"></i><i class="saved" style="height:78%"></i></div><div><span>Aug</span><i style="height:31%"></i><i class="saved" style="height:84%"></i></div><div><span>Sep</span><i style="height:22%"></i><i class="saved" style="height:92%"></i></div></div><div class="legend"><span><i></i> Waste</span><span><i class="saved"></i> Saved</span></div></article><article class="panel"><div class="panel-head"><div><h2>Top impact actions</h2><p>Where your points came from</p></div></div><div class="action-row"><span>🥕 Rescued ingredients</span><b>+540</b></div><div class="action-row"><span>♻️ Avoided waste</span><b>+380</b></div><div class="action-row"><span>🍲 Cooked leftovers</span><b>+220</b></div><div class="action-row"><span>🛒 Smarter shopping</span><b>+100</b></div></article></div>
+    </section>
+
+    <section class="content hidden" id="page-profile">
+      <div class="page-heading"><div><p class="eyebrow">MY PROFILE</p><h1>Your FoodSaver profile.</h1><p class="muted">View your account details and personalize your FoodSaver experience.</p></div><button class="ghost" id="profileLogoutBtn">Log out</button></div>
+      <div class="profile-layout">
+        <article class="panel profile-card-main">
+          <div class="profile-cover"></div>
+          <div class="profile-main">
+            <div class="profile-avatar-large" id="profileAvatar">T</div>
+            <div class="profile-identity"><h2 id="profileDisplayName">Theo</h2><p id="profileEmail">theo@example.com</p><span class="profile-status">● Active account</span></div>
+          </div>
+          <div class="profile-divider"></div>
+          <form id="profileForm" class="profile-form">
+            <div class="profile-section-title"><div><h3>Personal information</h3><p>Update the name shown across FoodSaver AI.</p></div></div>
+            <label>Display name<input id="profileNameInput" type="text" maxlength="60" required placeholder="Your name"></label>
+            <label>Email address<input id="profileEmailInput" type="email" disabled></label>
+            <button class="primary" type="submit">Save profile</button>
+            <p class="profile-message" id="profileMessage"></p>
+          </form>
+        </article>
+        <aside class="profile-side">
+          <article class="panel"><div class="panel-head"><div><h2>Account</h2><p>Your FoodSaver account</p></div></div><div class="account-row"><span>Account status</span><b>Active</b></div><div class="account-row"><span>Member since</span><b id="profileJoined">—</b></div><div class="account-row"><span>Inventory items</span><b id="profileFoodCount">0</b></div></article>
+          <article class="panel profile-tip"><span class="pill">FOODSAVER TIP</span><h3>Small choices create measurable impact.</h3><p>Keep your profile up to date so your FoodSaver experience stays personal.</p></article>
+        </aside>
+      </div>
     </section>
 
     <section class="content hidden" id="page-settings">

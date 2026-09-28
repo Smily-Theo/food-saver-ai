@@ -38,14 +38,55 @@ async function saveCloudFood(item) {
 }
 
 async function ensureProfile(user) {
-  if (!sb || !user) return;
-  await sb.from("profiles").upsert({
+  if (!sb || !user) return null;
+  const fallback = user.user_metadata?.display_name || user.email?.split("@")[0] || "Theo";
+  const { data, error } = await sb.from("profiles").upsert({
     id:user.id,
-    display_name:user.user_metadata?.display_name || user.email?.split("@")[0] || "Theo"
-  });
+    display_name:fallback
+  }).select().single();
+  if(error) console.warn("Profile upsert:", error.message);
+  return data || {id:user.id,display_name:fallback};
 }
 
+async function loadProfileView() {
+  if (!currentUser) return;
+  const email=currentUser.email || "";
+  let displayName=currentUser.user_metadata?.display_name || email.split("@")[0] || "Theo";
+  let joined=currentUser.created_at ? new Date(currentUser.created_at).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}) : "—";
+  if(sb){
+    const {data,error}=await sb.from("profiles").select("display_name").eq("id",currentUser.id).maybeSingle();
+    if(!error && data?.display_name) displayName=data.display_name;
+  }
+  const set=(sel,val)=>{const el=$(sel);if(el)el.textContent=val};
+  set("#profileDisplayName",displayName); set("#profileEmail",email); set("#profileJoined",joined); set("#profileFoodCount",String(inventory.length));
+  const avatarText=displayName.charAt(0).toUpperCase(); set("#profileAvatar",avatarText); set("#userName",displayName);
+  const av=$("#profileAvatarBtn"); if(av)av.textContent=avatarText;
+  const input=$("#profileNameInput"); if(input)input.value=displayName;
+  const emailInput=$("#profileEmailInput"); if(emailInput)emailInput.value=email;
+}
+
+async function saveProfile(e){
+  e.preventDefault();
+  if(!currentUser || !sb){setAuthMessage("#profileMessage","Please sign in to edit your profile.");return;}
+  const name=$("#profileNameInput").value.trim();
+  const msg=$("#profileMessage");
+  if(!name){if(msg)msg.textContent="Please enter a display name.";return;}
+  if(msg)msg.textContent="Saving…";
+  const {error:profileError}=await sb.from("profiles").upsert({id:currentUser.id,display_name:name});
+  if(profileError){if(msg)msg.textContent=profileError.message;return;}
+  const {error:authError}=await sb.auth.updateUser({data:{display_name:name}});
+  if(authError){console.warn("Auth metadata update:",authError.message);}
+  currentUser={...currentUser,user_metadata:{...(currentUser.user_metadata||{}),display_name:name}};
+  const heading=document.querySelector("#page-dashboard h1"); if(heading)heading.textContent=`Good evening, ${name} 👋`;
+  const userNameEl=$("#userName"); if(userNameEl)userNameEl.textContent=name;
+  const avatar=$("#profileAvatarBtn"); if(avatar)avatar.textContent=name.charAt(0).toUpperCase();
+  if(msg){msg.textContent="Profile saved successfully.";msg.classList.add("success");}
+  await loadProfileView();
+}
+
+
 async function showAuthenticatedApp(user) {
+  currentUser=user;
   $("#authScreen").classList.add("hidden");
   $("#appShell").classList.remove("hidden");
   const name = user?.user_metadata?.display_name || user?.email?.split("@")[0] || "Theo";
@@ -107,51 +148,8 @@ async function logout() {
   toast("You have been signed out.");
 }
 
-async function loadCloudInventory() {
-  if (!sb) return false;
-  const { data, error } = await sb.from("food_items")
-    .select("id,name,category,quantity,expiry_date,status")
-    .order("expiry_date", { ascending: true });
-  if (error) { console.warn("Supabase inventory read:", error.message); return false; }
-  inventory = (data || []).map(x => ({
-    id:x.id, name:x.name, category:x.category, quantity:x.quantity,
-    expiry:x.expiry_date, emoji:{Fruit:"🍎",Vegetable:"🥕",Dairy:"🥛",Grain:"🍚",Protein:"🥚",Other:"🥫"}[x.category] || "🥫"
-  }));
-  renderExpiry(); renderInventory();
-  return true;
-}
-
-async function saveCloudFood(item) {
-  if (!sb) return true;
-  const { data: { user } } = await sb.auth.getUser();
-  if (!user) {
-    toast("Demo mode: sign in is required for cloud saving.");
-    return false;
-  }
-  const { data, error } = await sb.from("food_items").insert({
-    user_id:user.id, name:item.name, category:item.category,
-    quantity:item.quantity, expiry_date:item.expiry, status:"active"
-  }).select().single();
-  if (error) { toast("Database error: " + error.message); return false; }
-  item.id = data.id;
-  return true;
-}
-
-async function ensureProfile() {
-  if (!sb) return;
-  const { data: { user } } = await sb.auth.getUser();
-  if (!user) return;
-  await sb.from("profiles").upsert({id:user.id, display_name:user.user_metadata?.display_name || "Theo"});
-}
-
-async function connectSupabase() {
-  if (!sb) return;
-  sb.auth.onAuthStateChange(() => { ensureProfile(); loadCloudInventory(); });
-  await ensureProfile();
-  await loadCloudInventory();
-}
-
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let currentUser=null;
 let inventory=[
  {id:1,name:"Milk",emoji:"🥛",category:"Dairy",quantity:"2 L",expiry:"2026-09-29"},
  {id:2,name:"Tomatoes",emoji:"🍅",category:"Vegetable",quantity:"1 kg",expiry:"2026-09-30"},
@@ -170,7 +168,7 @@ function status(item){let d=daysLeft(item.expiry);return d<=1?["urgent","Use tod
 function renderExpiry(){ $("#expiryList").innerHTML=inventory.slice().sort((a,b)=>daysLeft(a.expiry)-daysLeft(b.expiry)).slice(0,4).map(x=>{let s=status(x);return `<div class="expiry-item"><div class="food-icon">${x.emoji}</div><div><b>${x.name}</b><small>${x.quantity} · expires ${new Date(x.expiry).toLocaleDateString("en-IN",{day:"numeric",month:"short"})}</small></div><span class="status ${s[0]}">${s[1]}</span></div>`}).join("")}
 function renderInventory(filter="all",query=""){let arr=inventory.filter(x=>x.name.toLowerCase().includes(query.toLowerCase()));if(filter==="urgent")arr=arr.filter(x=>daysLeft(x.expiry)<=3);if(filter==="fresh")arr=arr.filter(x=>daysLeft(x.expiry)>3);$("#inventoryGrid").innerHTML=arr.map(x=>{let s=status(x),pct=Math.max(10,Math.min(100,daysLeft(x.expiry)*7));return `<article class="inventory-card"><div class="big-food">${x.emoji}</div><div class="row"><div><h3>${x.name}</h3><p>${x.category} · ${x.quantity}</p></div><span class="status ${s[0]}">${s[1]}</span></div><div class="progress"><i style="width:${pct}%"></i></div><p>Best use window: ${new Date(x.expiry).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}</p></article>`}).join("")||"<div class='panel'>No food items found.</div>"}
 function renderRecipes(){$("#recipeCards").innerHTML=recipes.map(r=>`<article class="recipe"><div class="recipe-top">${r.emoji}</div><div class="recipe-body"><b>${r.name}</b><p>${r.desc}</p></div></article>`).join("")}
-function navigate(page){$$(".content").forEach(x=>x.classList.add("hidden"));$("#page-"+page).classList.remove("hidden");$$(".nav-item").forEach(x=>x.classList.toggle("active",x.dataset.page===page));if(page==="inventory")renderInventory();$("#sidebar").classList.remove("open");window.scrollTo({top:0,behavior:"smooth"})}
+function navigate(page){$$(".content").forEach(x=>x.classList.add("hidden"));$("#page-"+page).classList.remove("hidden");$$(".nav-item").forEach(x=>x.classList.toggle("active",x.dataset.page===page));if(page==="inventory")renderInventory();if(page==="profile")loadProfileView();$("#sidebar").classList.remove("open");window.scrollTo({top:0,behavior:"smooth"})}
 $$("[data-page]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.page)));
 $("#menuBtn").onclick=()=>$("#sidebar").classList.toggle("open");
 $("#addFoodTop").onclick=$("#addFoodBtn").onclick=()=>$("#foodModal").classList.remove("hidden");
@@ -204,3 +202,8 @@ $$(".auth-tab").forEach(btn=>btn.addEventListener("click",()=>{
 $("#loginForm").addEventListener("submit",handleLogin);
 $("#registerForm").addEventListener("submit",handleRegister);
 $("#logoutBtn").addEventListener("click",logout);
+
+
+$("#profileForm").addEventListener("submit",saveProfile);
+$("#profileAvatarBtn").addEventListener("click",()=>navigate("profile"));
+$("#profileLogoutBtn").addEventListener("click",logout);
