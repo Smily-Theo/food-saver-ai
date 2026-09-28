@@ -176,7 +176,7 @@ $("#menuBtn").onclick=()=>$("#sidebar").classList.toggle("open");
 $("#addFoodTop").onclick=$("#addFoodBtn").onclick=()=>$("#foodModal").classList.remove("hidden");
 $("#closeModal").onclick=()=>$("#foodModal").classList.add("hidden");
 $("#foodModal").onclick=e=>{if(e.target.id==="foodModal")$("#foodModal").classList.add("hidden")};
-$("#foodForm").onsubmit=e=>{e.preventDefault();let f=new FormData(e.target),emoji={Fruit:"🍎",Vegetable:"🥕",Dairy:"🥛",Grain:"🍚",Protein:"🥚",Other:"🥫"}[f.get("category")]||"🥫";const item={id:Date.now(),name:f.get("name"),emoji,category:f.get("category"),quantity:f.get("quantity"),expiry:f.get("expiry")};
+$("#foodForm").onsubmit=async e=>{e.preventDefault();let f=new FormData(e.target),emoji={Fruit:"🍎",Vegetable:"🥕",Dairy:"🥛",Grain:"🍚",Protein:"🥚",Other:"🥫"}[f.get("category")]||"🥫";const item={id:Date.now(),name:f.get("name"),emoji,category:f.get("category"),quantity:f.get("quantity"),expiry:f.get("expiry")};
 if(hasSupabase){ const ok=await saveCloudFood(item); if(!ok)return; }
 inventory.unshift(item);e.target.reset();$("#foodModal").classList.add("hidden");renderExpiry();renderInventory();toast(hasSupabase ? "Food saved to Supabase 🌱" : "Food added — we'll help you save it 🌱")};
 $$(".filter").forEach(b=>b.onclick=()=>{$$(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderInventory(b.dataset.filter,$("#inventorySearch").value)});
